@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EPS Cyclades — Notes Terminale</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+  :root {
+    --bg:#f1f5f9; --surface:#fff; --border:#e2e8f0; --border-strong:#cbd5e1;
+    --text:#0f172a; --text-muted:#64748b; --text-light:#94a3b8;
+    --accent:#1d4ed8; --accent-h:#1e3a8a; --accent-l:#eff6ff; --accent-m:#bfdbfe;
+    --ok:#059669; --ok-l:#d1fae5; --warn:#d97706; --warn-l:#fef3c7;
+    --err:#dc2626; --err-l:#fee2e2;
+    --pro:#7c3aed; --pro-l:#f5f3ff; --pro-m:#ddd6fe;
+    --sh-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+    --sh:0 4px 16px rgba(0,0,0,.08); --sh-lg:0 16px 48px rgba(0,0,0,.14);
+    --r:8px; --r-lg:14px;
+    --font:'Plus Jakarta Sans',system-ui,sans-serif;
+    --mono:'JetBrains Mono',monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
+  .hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:0 18px;display:flex;align-items:center;gap:16px;height:54px;position:sticky;top:0;z-index:100;box-shadow:var(--sh-sm)}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px;color:var(--text);flex-shrink:0}
+  .logo-ic{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px}
+  .logo span{color:var(--accent)}
+  .vtabs{display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:3px}
+  .vtab{padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--text-muted);transition:all .15s;font-family:var(--font)}
+  .vtab:hover:not(.on){background:var(--border);color:var(--text)}
+  .vtab.on[data-v="generale"]{background:var(--accent);color:#fff}
+  .vtab.on[data-v="professionnelle"]{background:var(--pro);color:#fff}
+  .hdr-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .save-dot{font-size:11px;font-weight:600;color:var(--ok);opacity:0;transition:opacity .3s;pointer-events:none}
+  .save-dot.on{opacity:1}
+  .app-body{display:flex;height:calc(100vh - 54px);overflow:hidden}
+  .sb{width:208px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+  .sbb{padding:10px 10px 12px;border-bottom:1px solid var(--border)}
+  .sblbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--text-light);padding:6px 4px 5px}
+  .cr{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-muted);transition:all .12s}
+  .cr:hover{background:var(--bg);color:var(--text)} .cr.on{background:var(--accent-l);color:var(--accent)}
+  .cdot{width:7px;height:7px;border-radius:50%;background:var(--border-strong);flex-shrink:0}
+  .cr.on .cdot{background:var(--accent)}
+  .cr>span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cbadge{font-size:10px;font-family:var(--mono);padding:0 5px;background:var(--border);color:var(--text-muted);border-radius:8px;flex-shrink:0}
+  .cr.on .cbadge{background:var(--accent-m);color:var(--accent)}
+  .cdel{display:none;background:none;border:none;cursor:pointer;color:var(--err);padding:0 2px;font-size:14px;line-height:1;border-radius:3px}
+  .cr:hover .cdel{display:block} .cdel:hover{background:var(--err-l)}
+  .btn-nc{width:100%;margin-top:6px;padding:6px 8px;border:1.5px dashed var(--border-strong);border-radius:6px;background:transparent;color:var(--text-muted);font-size:12px;cursor:pointer;font-family:var(--font);transition:all .12s;display:flex;align-items:center;justify-content:center;gap:5px}
+  .btn-nc:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+  .sr{display:flex;align-items:center;justify-content:space-between;padding:3px 4px}
+  .slbl{font-size:11px;color:var(--text-muted)} .sv{font-size:12px;font-weight:600;font-family:var(--mono)}
+  .sv.g{color:var(--ok)} .sv.w{color:var(--warn)} .sv.d{color:var(--err)}
+  .cnt{flex:1;overflow:hidden;display:flex;flex-direction:column}
+  .tb{padding:10px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;background:var(--surface);flex-shrink:0;flex-wrap:wrap}
+  .tbsep{width:1px;height:22px;background:var(--border);margin:0 3px}
+  .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .12s;font-family:var(--font);white-space:nowrap;line-height:1.2}
+  .btn-p{background:var(--accent);color:#fff;border-color:var(--accent)} .btn-p:hover{background:var(--accent-h)}
+  .btn-o{background:var(--surface);color:var(--text);border-color:var(--border-strong)} .btn-o:hover{background:var(--bg);border-color:var(--text-muted)}
+  .btn-g{background:transparent;color:var(--text-muted);border-color:transparent} .btn-g:hover{background:var(--bg);color:var(--text)}
+  .btn-d{background:transparent;color:var(--err);border-color:transparent} .btn-d:hover{background:var(--err-l)}
+  .btn-pro{background:var(--pro-l);color:var(--pro);border-color:var(--pro-m)} .btn-pro:hover{background:var(--pro-m)}
+  .btn-sm{padding:4px 7px;font-size:11px}
+  .sw{display:flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 9px;flex:1;max-width:200px}
+  .sw input{background:transparent;border:none;outline:none;font-family:var(--font);font-size:12px;color:var(--text);width:100%}
+  .sw input::placeholder{color:var(--text-light)}
+  .ctitle{font-size:14px;font-weight:700;color:var(--text)} .csub{font-size:11px;color:var(--text-muted);margin-left:6px}
+  .twrap{flex:1;overflow:auto}
+  .gt{width:100%;border-collapse:collapse;font-size:12.5px;min-width:820px}
+  .gt thead{position:sticky;top:0;z-index:10}
+  .gt thead tr.hg th{background:#f1f5f9;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text-light);border-bottom:1px solid var(--border);padding:0;text-align:center}
+  .gt thead tr.hg th.gafl{background:var(--accent-l);color:var(--accent);border-bottom:1px solid var(--accent-m);padding:3px 0}
+  .gt thead tr.hg th.gpro{background:var(--pro-l);color:var(--pro);border-bottom:1px solid var(--pro-m);padding:3px 0}
+  .gt thead tr.hc th{padding:6px 8px;background:#f8fafc;font-weight:700;color:var(--text-muted);border-bottom:2px solid var(--border-strong);text-align:center;white-space:nowrap;font-size:11px}
+  .gt thead tr.hc th.left{text-align:left}
+  .gt tbody tr{border-bottom:1px solid var(--border);transition:background .08s} .gt tbody tr:hover{background:#f8fafc}
+  .gt td{padding:0;vertical-align:middle}
+  .tid{padding:0 10px;min-width:100px} .tid .sn{font-weight:600;font-size:12.5px;color:var(--text);line-height:1.3}
+  .cin{width:100%;height:100%;padding:8px 6px;border:none;background:transparent;font-family:var(--mono);font-size:12.5px;font-weight:500;color:var(--text);text-align:center;outline:none;display:block;min-width:52px;transition:background .1s}
+  .cin:focus{background:#eff6ff;box-shadow:inset 0 0 0 2px var(--accent);border-radius:4px}
+  .cin.err{color:var(--err)} .cin::placeholder{color:var(--text-light);font-weight:400}
+  .tsel{position:relative;min-width:80px}
+  .tsel::after{content:'▾';position:absolute;right:5px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--text-light);pointer-events:none}
+  .csel{width:100%;padding:8px 18px 8px 8px;border:none;background:transparent;font-family:var(--font);font-size:12px;font-weight:600;color:var(--text);cursor:pointer;outline:none;appearance:none;-webkit-appearance:none}
+  .csel:focus{background:var(--accent-l);border-radius:4px}
+  .nc{display:block;text-align:center;padding:7px 8px;font-family:var(--mono);font-weight:700;font-size:13.5px}
+  .nc.ex{color:#059669} .nc.ok{color:#16a34a} .nc.mo{color:var(--warn)} .nc.lo{color:var(--err)} .nc.nd{color:var(--text-light);font-weight:400;font-size:12px}
+  .nbar{width:calc(100% - 14px);height:3px;background:var(--border);border-radius:2px;margin:0 7px 6px;overflow:hidden}
+  .nbf{height:100%;border-radius:2px;transition:width .35s ease}
+  .nbf.ex{background:#059669} .nbf.ok{background:#16a34a} .nbf.mo{background:var(--warn)} .nbf.lo{background:var(--err)}
+  .tact{padding:3px 6px;width:68px} .abtns{display:flex;gap:2px;justify-content:center}
+  .empty{padding:56px 20px;text-align:center;color:var(--text-muted)}
+  .empty .ei{font-size:44px;margin-bottom:14px}
+  .empty h3{font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px}
+  .empty p{font-size:12px;max-width:340px;margin:0 auto 18px}
+  .ebtns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .bk{position:fixed;inset:0;background:rgba(15,23,42,.45);backdrop-filter:blur(3px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+  .bk.on{opacity:1;pointer-events:all}
+  .modal{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--sh-lg);width:540px;max-width:95vw;max-height:88vh;overflow-y:auto;transform:translateY(10px) scale(.98);transition:transform .2s}
+  .bk.on .modal{transform:translateY(0) scale(1)}
+  .mhdr{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .mtitle{font-size:15px;font-weight:700} .msub{font-size:11px;color:var(--text-muted);margin-top:2px}
+  .mbody{padding:18px 22px} .mftr{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:7px}
+  .btnx{padding:4px;background:none;border:none;cursor:pointer;color:var(--text-muted);border-radius:4px;font-size:16px;line-height:1} .btnx:hover{background:var(--bg);color:var(--text)}
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .fc{display:flex;flex-direction:column;gap:4px} .fc.full{grid-column:1/-1}
+  .flbl{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.02em}
+  .finp{padding:8px 10px;border:1.5px solid var(--border-strong);border-radius:6px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--surface);outline:none;transition:border-color .12s,box-shadow .12s}
+  .finp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(29,78,216,.1)}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700;background:var(--accent-l);color:var(--accent);margin-bottom:12px}
+  .chip.pro{background:var(--pro-l);color:var(--pro)}
+  .ctbl{background:var(--bg);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;margin-bottom:14px}
+  .crow{display:flex;align-items:center;padding:9px 14px;gap:10px;border-bottom:1px solid var(--border);font-size:12px}
+  .crow:last-child{border-bottom:none} .crow.tot{background:var(--accent-l);font-weight:700} .crow.totp{background:var(--pro-l);font-weight:700}
+  .cl{flex:1.2;color:var(--text-muted);font-size:11px} .cf{flex:2;font-family:var(--mono);font-size:11px;color:var(--text-light)} .cv{min-width:64px;text-align:right;font-family:var(--mono);font-weight:600}
+  .crow.tot .cv{font-size:15px;color:var(--accent)} .crow.totp .cv{font-size:15px;color:var(--pro)}
+  .codeb{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:12px 14px;font-family:var(--mono);font-size:11px;color:var(--text-muted);line-height:1.9}
+  .codeb strong{color:var(--text);font-weight:600}
+  .lbl-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+  .lbl-row:last-child{border-bottom:none}
+  .lbl-key{font-size:11px;font-weight:700;font-family:var(--mono);color:var(--text-muted);min-width:56px}
+  .lbl-desc{font-size:11px;color:var(--text-muted);flex:1}
+  .lbl-inp{flex:1.4;padding:6px 9px;border:1.5px solid var(--border-strong);border-radius:6px;font-family:var(--font);font-size:12px;color:var(--text);outline:none;background:var(--surface)}
+  .lbl-inp:focus{border-color:var(--pro);box-shadow:0 0 0 3px rgba(124,58,237,.1)}
+  .toasts{position:fixed;bottom:22px;right:22px;z-index:500;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+  .toast{padding:9px 15px;border-radius:8px;font-size:12px;font-weight:600;box-shadow:var(--sh);animation:tin .2s ease;display:flex;align-items:center;gap:7px;min-width:200px;background:var(--text);color:#fff;pointer-events:all}
+  .toast.ok{background:var(--ok)} .toast.err{background:var(--err)} .toast.warn{background:#f59e0b}
+  @keyframes tin{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+  ::-webkit-scrollbar{width:5px;height:5px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:3px}
+  .itag{font-size:9px;font-weight:700;background:var(--border);color:var(--text-light);padding:1px 4px;border-radius:3px;font-family:var(--mono);vertical-align:middle;margin-left:2px}
+  @media(max-width:820px){.sb{display:none}}
+  </style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="logo"><div class="logo-ic">🏃</div><div>EPS<span>Cyclades</span></div></div>
+  <div class="vtabs">
+    <button class="vtab on" data-v="generale" onclick="setVoie('generale')">Voie Générale</button>
+    <button class="vtab" data-v="professionnelle" onclick="setVoie('professionnelle')">Voie Pro</button>
+  </div>
+  <div class="hdr-r"><div class="save-dot" id="saveDot">✓ Sauvegardé</div></div>
+</header>
+
+<div class="app-body">
+  <aside class="sb">
+    <div class="sbb">
+      <div class="sblbl">Classes</div>
+      <div id="clsList"></div>
+      <button class="btn-nc" onclick="openModal('newClass')">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="currentColor"><path d="M4.75 4.75V0h1.5v4.75H11v1.5H6.25V11h-1.5V6.25H0v-1.5h4.75z"/></svg>
+        Nouvelle classe
+      </button>
+    </div>
+    <div class="sbb">
+      <div class="sblbl">Statistiques</div>
+      <div class="sr"><span class="slbl">Élèves</span><span class="sv" id="sN">—</span></div>
+      <div class="sr"><span class="slbl">Moyenne</span><span class="sv" id="sM">—</span></div>
+      <div class="sr"><span class="slbl">Minimum</span><span class="sv d" id="sMin">—</span></div>
+      <div class="sr"><span class="slbl">Maximum</span><span class="sv g" id="sMax">—</span></div>
+      <div class="sr"><span class="slbl">≥ 10/20</span><span class="sv" id="sP">—</span></div>
+    </div>
+    <div class="sbb">
+      <div class="sblbl">Choix stratégiques</div>
+      <div class="sr"><span class="slbl">Option A (2/6)</span><span class="sv" id="sA">—</span></div>
+      <div class="sr"><span class="slbl">Option B (4/4)</span><span class="sv" id="sB">—</span></div>
+      <div class="sr"><span class="slbl">Option C (6/2)</span><span class="sv" id="sC">—</span></div>
+    </div>
+    <div class="sbb">
+      <div class="sblbl">Aide — Formule</div>
+      <div style="font-size:10px;color:var(--text-muted);line-height:1.7;padding:2px 4px">
+        <strong style="color:var(--text)">Générale :</strong><br>AFL1(/12) + AFL2_conv + AFL3_conv<br>conv = (note/4) × coeff<br><br>
+        <strong style="color:var(--text)">Pro :</strong><br>AFLP1 + AFLP2 + A_conv + B_conv
+      </div>
+    </div>
+  </aside>
+
+  <main class="cnt">
+    <div class="tb">
+      <button class="btn btn-p" onclick="openModal('addStudent')">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M5.25 5.25V0h1.5v5.25H12v1.5H6.75V12h-1.5V6.75H0v-1.5h5.25z"/></svg>
+        Ajouter élève
+      </button>
+      <button class="btn btn-o" onclick="document.getElementById('iXls').click()" title="Import noms + notes en un seul fichier — colonnes reconnues automatiquement">
+        <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20"><path d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"/></svg>
+        Import Excel
+      </button>
+      <input type="file" id="iXls" accept=".xlsx,.xls,.csv" style="display:none" onchange="doImport(this)">
+      <div class="tbsep"></div>
+      <button class="btn btn-o" onclick="doExportExcel()">
+        <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20"><path d="M10 3a1 1 0 011 1v8.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V4a1 1 0 011-1z"/></svg>
+        Export Excel
+      </button>
+      <button class="btn btn-o" onclick="doExportPDF()">
+        <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+        Export PDF
+      </button>
+      <button class="btn btn-o" onclick="dlTemplate()" title="Télécharger un modèle Excel">
+        <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586L7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/></svg>
+        Modèle
+      </button>
+      <div class="tbsep"></div>
+      <button class="btn btn-pro" id="btnLabels" style="display:none" onclick="openModal('labels')" title="Renommer les colonnes AFLP selon vos APSA">
+        <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+        Nommer AFLP
+      </button>
+      <div class="sw">
+        <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20" style="color:var(--text-light);flex-shrink:0"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+        <input type="text" placeholder="Rechercher…" id="searchIn" oninput="doSearch(this.value)">
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center">
+        <span class="ctitle" id="clsTitle"></span><span class="csub" id="clsSub"></span>
+      </div>
+    </div>
+
+    <div class="twrap" id="tWrap">
+      <div class="empty" id="emEl">
+        <div class="ei">📂</div><h3>Aucune classe créée</h3>
+        <p>Créez une classe ou importez directement un fichier Excel contenant noms et notes.</p>
+        <div class="ebtns">
+          <button class="btn btn-p" onclick="openModal('newClass')">Créer une classe</button>
+          <button class="btn btn-o" onclick="document.getElementById('iXls').click()">Importer Excel</button>
+        </div>
+      </div>
+      <table class="gt" id="mainT" style="display:none">
+        <thead><tr class="hg" id="hgRow"></tr><tr class="hc" id="hcRow"></tr></thead>
+        <tbody id="tBody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<div class="bk" id="bk" onclick="bgClose(event)"><div class="modal" id="modalEl"></div></div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+/* ── STATE ── */
+let S = {
+  voie: 'generale', classes: [], activeId: null, search: '', uid: 1,
+  labels: { aflp1:'AFLP1', aflp2:'AFLP2', afla:'AFL Comp. A', aflb:'AFL Comp. B' }
+};
+
+/* ── MATHS ── */
+function r2(n){return Math.round(n*100)/100;}
+function calcGen(s){
+  const a1=parseFloat(s.afl1),a2=parseFloat(s.afl2),a3=parseFloat(s.afl3);
+  if([a1,a2,a3].some(isNaN)) return null;
+  const ch=s.choix||'B';
+  const [c2,c3]=ch==='A'?[2,6]:ch==='B'?[4,4]:[6,2];
+  const c2v=r2((a2/4)*c2),c3v=r2((a3/4)*c3);
+  return {a1,a2,a3,ch,c2,c3,c2v,c3v,total:r2(a1+c2v+c3v)};
+}
+function calcPro(s){
+  const p1=parseFloat(s.aflp1),p2=parseFloat(s.aflp2),ca=parseFloat(s.afla),cb=parseFloat(s.aflb);
+  if([p1,p2,ca,cb].some(isNaN)) return null;
+  const ch=s.choix||'B';
+  const [cca,ccb]=ch==='A'?[2,6]:ch==='B'?[4,4]:[6,2];
+  const cav=r2((ca/4)*cca),cbv=r2((cb/4)*ccb);
+  return {p1,p2,ca,cb,ch,cca,ccb,cav,cbv,total:r2(p1+p2+cav+cbv)};
+}
+function nCls(t){if(t===null)return 'nd';if(t>=16)return 'ex';if(t>=12)return 'ok';if(t>=8)return 'mo';return 'lo';}
+
+/* ── HELPERS ── */
+function gid(id){return document.getElementById(id);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// Normalize: lowercase, strip accents & non-alphanumeric
+function nk(s){
+  return String(s||'').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]/g,'');
+}
+
+function getActive(){return S.classes.find(c=>c.id===S.activeId)||null;}
+function findStu(id){for(const c of S.classes){const s=c.students.find(s=>s.id===id);if(s)return s;}return null;}
+function filteredStu(){
+  const cls=getActive(); if(!cls) return [];
+  const q=S.search.toLowerCase().trim(); if(!q) return cls.students;
+  return cls.students.filter(s=>(s.nom+' '+s.prenom+' '+(s.classe||'')).toLowerCase().includes(q));
+}
+function mkStu(nom,prenom,classe){
+  return {id:'s'+(S.uid++),nom,prenom,classe,choix:'B',afl1:'',afl2:'',afl3:'',aflp1:'',aflp2:'',afla:'',aflb:''};
+}
+
+// Fuzzy name match — handles accents, partial matches, swapped nom/prenom
+function fuzzy(sNom,sPrenom,nom,prenom){
+  const n1=nk(sNom),n2=nk(nom);
+  if(!n2||n2.length<2) return false;
+  if(n1===n2) return true;
+  // Prefix match (≥4 chars)
+  if(n1.length>=4&&n2.length>=4&&(n1.startsWith(n2.slice(0,5))||n2.startsWith(n1.slice(0,5)))) return true;
+  // Full name concatenated match (catches "DUPONT Thomas" split differently)
+  const full1=nk(sNom+sPrenom), full2=nk(nom+(prenom||''));
+  if(full1.length>=4&&full2.length>=4&&(full1.includes(full2)||full2.includes(full1))) return true;
+  // Prenom + partial nom
+  if(prenom&&sPrenom){
+    const p1=nk(sPrenom),p2=nk(prenom);
+    if(p1===p2&&n1.length>=3&&n2.length>=3&&(n1.includes(n2.slice(0,4))||n2.includes(n1.slice(0,4)))) return true;
+  }
+  return false;
+}
+
+/* ── COLUMN DETECTION ── */
+function detectCols(hdrs){
+  const find=(...cands)=>{
+    for(const c of cands){const i=hdrs.findIndex(h=>h===c||h.includes(c));if(i!==-1)return i;}
+    return -1;
+  };
+  return {
+    nom:     find('nom','lastname','name','surname','eleve'),
+    prenom:  find('prenom','firstname','givenname'),
+    // Detect "NOM PRENOM" / "PRENOM NOM" fused in one header
+    fullname:find('nomprenom','prenomnom','nometsurnom','nomcomplet','fullname','identite','nomeleve','nomprenomeleve'),
+    classe:  find('classe','class','group','groupe','section','division'),
+    afl1:    find('afl1','afl 1','note1','n1'),
+    afl2:    find('afl2','afl 2','note2','n2'),
+    afl3:    find('afl3','afl 3','note3','n3'),
+    aflp1:   find('aflp1','aflp 1'),
+    aflp2:   find('aflp2','aflp 2'),
+    afla:    find('afla','aflca','aflcompa','compa','complementa','compla'),
+    aflb:    find('aflb','aflcb','aflcompb','compb','complementb','complb'),
+    choix:   find('choix','option','strategique','strategie','repartition'),
+  };
+}
+
+/* ═══════════════════════════════════════════════
+   SMART IMPORT — handles ANY Excel format:
+   - noms seuls (crée les élèves)
+   - noms + notes (crée ET remplit les notes)
+   - notes seules (met à jour les élèves existants)
+   - NOM PRENOM dans une seule cellule
+   - plusieurs onglets (prend le plus pertinent)
+═══════════════════════════════════════════════ */
+function doImport(input){
+  const file=input.files[0]; if(!file) return;
+  input.value='';
+  const rd=new FileReader();
+  rd.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'binary'});
+
+      // Pick best sheet: prefer one whose name mentions eleve/note/classe/afl
+      let sheetName=wb.SheetNames[0];
+      for(const n of wb.SheetNames){
+        if(/eleve|note|classe|afl/i.test(n)){sheetName=n;break;}
+      }
+      const ws=wb.Sheets[sheetName];
+      const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:true});
+      if(raw.length<2){toast('Fichier vide','err');return;}
+
+      // Find header row: first row with ≥2 non-empty cells
+      let hIdx=0;
+      for(let i=0;i<Math.min(6,raw.length);i++){
+        if(raw[i].filter(c=>String(c).trim()!=='').length>=2){hIdx=i;break;}
+      }
+
+      const hdrs=raw[hIdx].map(h=>nk(String(h)));
+      const cols=detectCols(hdrs);
+
+      // Determine what kind of data this file has
+      const hasGradesGen=cols.afl1!==-1||cols.afl2!==-1||cols.afl3!==-1;
+      const hasGradesPro=cols.aflp1!==-1||cols.aflp2!==-1||cols.afla!==-1||cols.aflb!==-1;
+      const hasGrades=hasGradesGen||hasGradesPro;
+      const hasNames=cols.nom!==-1||cols.fullname!==-1;
+
+      // Get or create active class
+      let cls=getActive();
+      if(!cls){
+        cls={id:'c'+(S.uid++),name:file.name.replace(/\.[^/.]+$/,''),students:[]};
+        S.classes.push(cls); S.activeId=cls.id;
+      }
+
+      let created=0,updated=0;
+
+      for(let i=hIdx+1;i<raw.length;i++){
+        const row=raw[i];
+        // Skip blank rows
+        if(row.every(c=>c===''||c===null||c===undefined)) continue;
+
+        /* ── Extract student name ── */
+        let nom='',prenom='';
+
+        if(cols.fullname!==-1&&String(row[cols.fullname]||'').trim()){
+          // Single cell: "DUPONT Thomas" or "Thomas DUPONT"
+          const full=String(row[cols.fullname]).trim();
+          const parts=full.split(/\s+/);
+          // Heuristic: fully-uppercase token(s) = NOM, rest = prenom
+          const up=parts.filter(p=>p.length>1&&p===p.toUpperCase()&&/[A-Z]/.test(p));
+          const lo=parts.filter(p=>!(p.length>1&&p===p.toUpperCase()&&/[A-Z]/.test(p)));
+          if(up.length&&lo.length){nom=up.join(' ');prenom=lo.join(' ');}
+          else if(parts.length>=2){nom=parts[0].toUpperCase();prenom=parts.slice(1).join(' ');}
+          else{nom=parts[0].toUpperCase();}
+
+        } else if(cols.nom!==-1){
+          nom=String(row[cols.nom]||'').trim().toUpperCase();
+          prenom=cols.prenom!==-1?String(row[cols.prenom]||'').trim():'';
+          // If nom cell contains a space, it might be "NOM Prenom" fused
+          if(!prenom&&nom.includes(' ')){
+            const p=nom.split(/\s+/);
+            nom=p[0]; prenom=p.slice(1).join(' ');
+          }
+        } else if(!hasNames&&hasGrades){
+          // No name columns at all — try to match by row order or first text cell
+          const textCells=row.map((c,i)=>({v:String(c||'').trim(),i})).filter(x=>x.v&&isNaN(parseFloat(x.v))&&x.v.length>1);
+          if(textCells.length>=2){nom=textCells[0].v.toUpperCase();prenom=textCells[1].v;}
+          else if(textCells.length===1){nom=textCells[0].v.toUpperCase();}
+          else continue;
+        } else {
+          continue;
+        }
+
+        if(!nom||nom.length<2) continue;
+
+        /* ── Find or create student ── */
+        let s=cls.students.find(st=>fuzzy(st.nom,st.prenom,nom,prenom));
+        if(!s){
+          const classeVal=cols.classe!==-1?String(row[cols.classe]||'').trim():cls.name;
+          s=mkStu(nom,prenom||'',classeVal);
+          cls.students.push(s);
+          created++;
+        }
+
+        /* ── Assign grades ── */
+        if(hasGrades){
+          const setF=(idx,field)=>{
+            if(idx===-1) return;
+            const raw_val=row[idx];
+            if(raw_val===''||raw_val===null||raw_val===undefined) return;
+            const v=parseFloat(String(raw_val).replace(',','.'));
+            if(!isNaN(v)){s[field]=v;updated++;}
+          };
+          setF(cols.afl1,'afl1');setF(cols.afl2,'afl2');setF(cols.afl3,'afl3');
+          setF(cols.aflp1,'aflp1');setF(cols.aflp2,'aflp2');
+          setF(cols.afla,'afla');setF(cols.aflb,'aflb');
+          if(cols.choix!==-1){
+            const cv=String(row[cols.choix]||'').trim().toUpperCase();
+            if(['A','B','C'].includes(cv)) s.choix=cv;
+          }
+        }
+      }
+
+      render();
+      const parts=[];
+      if(created) parts.push(`${created} élève${created>1?'s':''} créé${created>1?'s':''}`);
+      if(updated) parts.push(`${updated} note${updated>1?'s':''} importée${updated>1?'s':''}`);
+      if(!parts.length) toast('Aucune donnée reconnue — vérifiez les en-têtes (NOM, PRENOM, AFL1…)','warn');
+      else toast(parts.join(' · '),'ok');
+
+    }catch(err){console.error(err);toast('Erreur : '+err.message,'err');}
+  };
+  rd.readAsBinaryString(file);
+}
+
+/* ── RENDER ── */
+function render(){renderSidebar();renderTable();renderStats();save();}
+
+function renderSidebar(){
+  const el=gid('clsList');el.innerHTML='';
+  S.classes.forEach(cls=>{
+    const d=document.createElement('div');
+    d.className='cr'+(cls.id===S.activeId?' on':'');
+    d.innerHTML=`<span class="cdot"></span><span title="${esc(cls.name)}">${esc(cls.name)}</span>
+      <span class="cbadge">${cls.students.length}</span>
+      <button class="cdel" onclick="event.stopPropagation();delClass('${cls.id}')">×</button>`;
+    d.onclick=()=>{S.activeId=cls.id;render();};
+    el.appendChild(d);
+  });
+}
+
+function renderTable(){
+  const cls=getActive(),stu=filteredStu();
+  const em=gid('emEl'),tbl=gid('mainT'),ct=gid('clsTitle'),cs=gid('clsSub');
+  if(!cls){
+    ct.textContent='';cs.textContent='';
+    em.innerHTML=`<div class="ei">📂</div><h3>Aucune classe créée</h3>
+      <p>Créez une classe ou importez directement un fichier Excel (noms + notes en un seul fichier).</p>
+      <div class="ebtns"><button class="btn btn-p" onclick="openModal('newClass')">Créer une classe</button>
+      <button class="btn btn-o" onclick="document.getElementById('iXls').click()">Importer Excel</button></div>`;
+    em.style.display='';tbl.style.display='none';return;
+  }
+  ct.textContent=cls.name;
+  cs.textContent=` — ${cls.students.length} élève${cls.students.length!==1?'s':''}`;
+  if(!stu.length){
+    em.innerHTML=S.search
+      ?`<div class="ei">🔍</div><h3>Aucun résultat</h3><p>Pas d'élève correspondant à "${esc(S.search)}".</p>`
+      :`<div class="ei">📋</div><h3>Classe vide</h3>
+        <p>Ajoutez des élèves manuellement ou importez un fichier Excel avec noms et notes ensemble.</p>
+        <div class="ebtns"><button class="btn btn-p" onclick="openModal('addStudent')">Ajouter un élève</button>
+        <button class="btn btn-o" onclick="document.getElementById('iXls').click()">Importer Excel</button></div>`;
+    em.style.display='';tbl.style.display='none';return;
+  }
+  em.style.display='none';tbl.style.display='';
+  renderHeaders();renderBody(stu);
+}
+
+function L(k){return esc(S.labels[k]||k);}
+
+function renderHeaders(){
+  const hg=gid('hgRow'),hc=gid('hcRow');
+  if(S.voie==='generale'){
+    hg.innerHTML=`<th colspan="3"></th><th colspan="3" class="gafl">AFL — Voie Générale</th><th colspan="2"></th><th></th>`;
+    hc.innerHTML=`<th class="left" style="padding-left:14px;width:130px">Nom</th>
+      <th class="left" style="width:110px">Prénom</th><th style="width:70px">Classe</th>
+      <th>AFL1 <span class="itag">/12</span></th><th>AFL2 <span class="itag">/4</span></th><th>AFL3 <span class="itag">/4</span></th>
+      <th style="min-width:86px">Choix</th><th style="min-width:82px">Note /20</th><th style="width:64px"></th>`;
+  } else {
+    hg.innerHTML=`<th colspan="3"></th><th colspan="4" class="gpro">AFLP — Voie Professionnelle</th><th colspan="2"></th><th></th>`;
+    hc.innerHTML=`<th class="left" style="padding-left:14px;width:130px">Nom</th>
+      <th class="left" style="width:110px">Prénom</th><th style="width:70px">Classe</th>
+      <th>${L('aflp1')} <span class="itag">/7</span></th>
+      <th>${L('aflp2')} <span class="itag">/5</span></th>
+      <th>${L('afla')} <span class="itag">/4</span></th>
+      <th>${L('aflb')} <span class="itag">/4</span></th>
+      <th style="min-width:86px">Choix</th><th style="min-width:82px">Note /20</th><th style="width:64px"></th>`;
+  }
+}
+
+function renderBody(stu){
+  const tb=gid('tBody');tb.innerHTML='';
+  stu.forEach(s=>{
+    const res=S.voie==='generale'?calcGen(s):calcPro(s);
+    const nc=res?nCls(res.total):'nd';
+    const pct=res?(res.total/20*100).toFixed(1):0;
+    const nd=res?res.total.toFixed(2):'—';
+    let gc='';
+    if(S.voie==='generale'){
+      gc=`<td><input class="cin" type="number" min="0" max="12" step="0.5" placeholder="—" value="${esc(s.afl1)}" oninput="sg('${s.id}','afl1',this,12)" onchange="sg('${s.id}','afl1',this,12)"></td>
+          <td><input class="cin" type="number" min="0" max="4" step="0.5" placeholder="—" value="${esc(s.afl2)}" oninput="sg('${s.id}','afl2',this,4)" onchange="sg('${s.id}','afl2',this,4)"></td>
+          <td><input class="cin" type="number" min="0" max="4" step="0.5" placeholder="—" value="${esc(s.afl3)}" oninput="sg('${s.id}','afl3',this,4)" onchange="sg('${s.id}','afl3',this,4)"></td>
+          <td class="tsel"><select class="csel" onchange="sc('${s.id}',this.value)">
+            <option value="A"${s.choix==='A'?' selected':''}>A — 2/6</option>
+            <option value="B"${(!s.choix||s.choix==='B')?' selected':''}>B — 4/4</option>
+            <option value="C"${s.choix==='C'?' selected':''}>C — 6/2</option>
+          </select></td>`;
+    } else {
+      gc=`<td><input class="cin" type="number" min="0" max="7" step="0.5" placeholder="—" value="${esc(s.aflp1)}" oninput="sg('${s.id}','aflp1',this,7)" onchange="sg('${s.id}','aflp1',this,7)"></td>
+          <td><input class="cin" type="number" min="0" max="5" step="0.5" placeholder="—" value="${esc(s.aflp2)}" oninput="sg('${s.id}','aflp2',this,5)" onchange="sg('${s.id}','aflp2',this,5)"></td>
+          <td><input class="cin" type="number" min="0" max="4" step="0.5" placeholder="—" value="${esc(s.afla)}" oninput="sg('${s.id}','afla',this,4)" onchange="sg('${s.id}','afla',this,4)"></td>
+          <td><input class="cin" type="number" min="0" max="4" step="0.5" placeholder="—" value="${esc(s.aflb)}" oninput="sg('${s.id}','aflb',this,4)" onchange="sg('${s.id}','aflb',this,4)"></td>
+          <td class="tsel"><select class="csel" onchange="sc('${s.id}',this.value)">
+            <option value="A"${s.choix==='A'?' selected':''}>A — 2/6</option>
+            <option value="B"${(!s.choix||s.choix==='B')?' selected':''}>B — 4/4</option>
+            <option value="C"${s.choix==='C'?' selected':''}>C — 6/2</option>
+          </select></td>`;
+    }
+    const tr=document.createElement('tr');tr.dataset.id=s.id;
+    tr.innerHTML=`<td class="tid" style="padding-left:14px"><div class="sn">${esc(s.nom)}</div></td>
+      <td class="tid"><div class="sn" style="font-weight:500">${esc(s.prenom)}</div></td>
+      <td style="text-align:center;padding:0 6px"><span style="font-size:10px;color:var(--text-muted);font-family:var(--mono)">${esc(s.classe||'')}</span></td>
+      ${gc}
+      <td><span class="nc ${nc}">${nd}</span>${res?`<div class="nbar"><div class="nbf ${nc}" style="width:${pct}%"></div></div>`:''}</td>
+      <td class="tact"><div class="abtns">
+        <button class="btn btn-g btn-sm" title="Détail du calcul" onclick="showDetail('${s.id}')">
+          <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+        </button>
+        <button class="btn btn-d btn-sm" title="Supprimer" onclick="delStu('${s.id}')">
+          <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        </button>
+      </div></td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function renderStats(){
+  const stu=filteredStu();
+  const rs=stu.map(s=>S.voie==='generale'?calcGen(s):calcPro(s)).filter(Boolean);
+  const ns=rs.map(r=>r.total);
+  gid('sN').textContent=stu.length||'—';
+  if(!ns.length){['sM','sMin','sMax','sP','sA','sB','sC'].forEach(i=>gid(i).textContent='—');return;}
+  gid('sM').textContent=(ns.reduce((a,b)=>a+b,0)/ns.length).toFixed(2);
+  gid('sMin').textContent=Math.min(...ns).toFixed(2);
+  gid('sMax').textContent=Math.max(...ns).toFixed(2);
+  gid('sP').textContent=`${ns.filter(n=>n>=10).length}/${ns.length}`;
+  gid('sA').textContent=stu.filter(s=>s.choix==='A').length;
+  gid('sB').textContent=stu.filter(s=>!s.choix||s.choix==='B').length;
+  gid('sC').textContent=stu.filter(s=>s.choix==='C').length;
+}
+
+/* ── GRADE UPDATES ── */
+function sg(id,field,input,max){
+  const s=findStu(id);if(!s)return;
+  s[field]=input.value.trim();
+  const v=parseFloat(s[field]);
+  input.classList.toggle('err',s[field]!==''&&(isNaN(v)||v<0||v>max));
+  updNote(id);renderStats();dSave();
+}
+function sc(id,choix){const s=findStu(id);if(!s)return;s.choix=choix;updNote(id);renderStats();dSave();}
+function updNote(id){
+  const s=findStu(id);if(!s)return;
+  const tr=document.querySelector(`tr[data-id="${id}"]`);if(!tr)return;
+  const res=S.voie==='generale'?calcGen(s):calcPro(s);
+  const ncEl=tr.querySelector('.nc'),barEl=tr.querySelector('.nbf'),barWrap=tr.querySelector('.nbar');
+  if(res){
+    const cl=nCls(res.total);
+    if(ncEl){ncEl.textContent=res.total.toFixed(2);ncEl.className=`nc ${cl}`;}
+    if(barEl){barEl.className=`nbf ${cl}`;barEl.style.width=`${res.total/20*100}%`;}
+    else if(!barWrap&&ncEl?.parentElement){
+      const bw=document.createElement('div');bw.className='nbar';
+      const bf=document.createElement('div');bf.className=`nbf ${cl}`;bf.style.width=`${res.total/20*100}%`;
+      bw.appendChild(bf);ncEl.parentElement.appendChild(bw);
+    }
+  } else {
+    if(ncEl){ncEl.textContent='—';ncEl.className='nc nd';}
+    if(barWrap)barWrap.remove();
+  }
+}
+function delStu(id){
+  for(const c of S.classes){const i=c.students.findIndex(s=>s.id===id);if(i!==-1){c.students.splice(i,1);render();toast('Élève supprimé');return;}}
+}
+function delClass(id){
+  if(!confirm('Supprimer cette classe et tous ses élèves ?'))return;
+  S.classes=S.classes.filter(c=>c.id!==id);
+  if(S.activeId===id)S.activeId=S.classes[0]?.id||null;
+  render();toast('Classe supprimée');
+}
+
+/* ── VOIE / SEARCH ── */
+function setVoie(v){
+  S.voie=v;
+  document.querySelectorAll('.vtab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));
+  gid('btnLabels').style.display=v==='professionnelle'?'':'none';
+  render();
+}
+function doSearch(q){S.search=q;renderTable();renderStats();}
+
+/* ── MODALS ── */
+let activeModal=null;
+function openModal(type,data){
+  activeModal=type;
+  const el=gid('modalEl');
+
+  if(type==='newClass'){
+    el.innerHTML=`<div class="mhdr"><div><div class="mtitle">Nouvelle classe</div><div class="msub">Créer un groupe d'élèves</div></div><button class="btnx" onclick="closeModal()">×</button></div>
+      <div class="mbody"><div class="fc"><label class="flbl">Nom de la classe *</label><input class="finp" id="nc_n" placeholder="Ex: Terminale A, TLE PRO 2…" autofocus></div></div>
+      <div class="mftr"><button class="btn btn-o" onclick="closeModal()">Annuler</button><button class="btn btn-p" onclick="doNewClass()">Créer</button></div>`;
+  }
+  else if(type==='addStudent'){
+    const cls=getActive();
+    el.innerHTML=`<div class="mhdr"><div><div class="mtitle">Ajouter un élève</div><div class="msub">${cls?`Dans : ${esc(cls.name)}`:'Sélectionnez une classe'}</div></div><button class="btnx" onclick="closeModal()">×</button></div>
+      <div class="mbody"><div class="fgrid">
+        <div class="fc"><label class="flbl">Nom *</label><input class="finp" id="as_n" placeholder="DUPONT" style="text-transform:uppercase" autofocus></div>
+        <div class="fc"><label class="flbl">Prénom *</label><input class="finp" id="as_p" placeholder="Marie"></div>
+        <div class="fc"><label class="flbl">Classe</label><input class="finp" id="as_c" placeholder="TLE A" value="${cls?esc(cls.name):''}"></div>
+        <div class="fc"><label class="flbl">Choix stratégique</label>
+          <select class="finp" id="as_ch">
+            <option value="A">Option A — AFL2:/2 AFL3:/6</option>
+            <option value="B" selected>Option B — AFL2:/4 AFL3:/4</option>
+            <option value="C">Option C — AFL2:/6 AFL3:/2</option>
+          </select></div></div></div>
+      <div class="mftr"><button class="btn btn-o" onclick="closeModal()">Annuler</button><button class="btn btn-p" onclick="doAddStu()">Ajouter</button></div>`;
+  }
+  else if(type==='labels'){
+    el.innerHTML=`<div class="mhdr">
+      <div><div class="mtitle">Personnaliser les colonnes Pro</div><div class="msub">Nommez les 4 AFLP selon vos activités (APSA)</div></div>
+      <button class="btnx" onclick="closeModal()">×</button></div>
+      <div class="mbody">
+        <div style="background:var(--pro-l);border:1px solid var(--pro-m);border-radius:8px;padding:10px 14px;font-size:11px;color:var(--pro);margin-bottom:14px;line-height:1.6">
+          Ces noms s'affichent dans les en-têtes du tableau, les détails de calcul et les exports.
+        </div>
+        <div>
+          <div class="lbl-row"><span class="lbl-key">AFLP 1</span><span class="lbl-desc">Note fixe — max 7 pts</span><input class="lbl-inp" id="lb_aflp1" value="${esc(S.labels.aflp1)}" placeholder="AFLP1"></div>
+          <div class="lbl-row"><span class="lbl-key">AFLP 2</span><span class="lbl-desc">Note fixe — max 5 pts</span><input class="lbl-inp" id="lb_aflp2" value="${esc(S.labels.aflp2)}" placeholder="AFLP2"></div>
+          <div class="lbl-row"><span class="lbl-key">AFLP A</span><span class="lbl-desc">Complémentaire — max 4 pts</span><input class="lbl-inp" id="lb_afla" value="${esc(S.labels.afla)}" placeholder="AFL Comp. A"></div>
+          <div class="lbl-row"><span class="lbl-key">AFLP B</span><span class="lbl-desc">Complémentaire — max 4 pts</span><input class="lbl-inp" id="lb_aflb" value="${esc(S.labels.aflb)}" placeholder="AFL Comp. B"></div>
+        </div>
+      </div>
+      <div class="mftr"><button class="btn btn-o" onclick="closeModal()">Annuler</button>
+        <button class="btn" style="background:var(--pro);color:#fff;border-color:var(--pro)" onclick="saveLabels()">Appliquer</button></div>`;
+  }
+  else if(type==='detail'&&data){renderDetailModal(el,data);}
+
+  gid('bk').classList.add('on');
+  setTimeout(()=>{const f=el.querySelector('input,select');if(f)f.focus();},80);
+}
+
+function renderDetailModal(el,s){
+  let body='';
+  if(S.voie==='generale'){
+    const r=calcGen(s);
+    if(!r){body=`<p style="text-align:center;color:var(--text-muted);padding:24px 0">Notes incomplètes — renseignez AFL1, AFL2 et AFL3.</p>`;}
+    else{body=`<div class="chip">✦ Choix ${r.ch} — AFL2:/${r.c2} · AFL3:/${r.c3}</div>
+      <div class="ctbl">
+        <div class="crow"><span class="cl">AFL1</span><span class="cf">note brute</span><span class="cv">${r.a1} <small style="font-weight:400;color:var(--text-light)">/12</small></span></div>
+        <div class="crow"><span class="cl">AFL2 converti</span><span class="cf">(${r.a2}/4) × ${r.c2}</span><span class="cv">${r.c2v} <small style="font-weight:400;color:var(--text-light)">/${r.c2}</small></span></div>
+        <div class="crow"><span class="cl">AFL3 converti</span><span class="cf">(${r.a3}/4) × ${r.c3}</span><span class="cv">${r.c3v} <small style="font-weight:400;color:var(--text-light)">/${r.c3}</small></span></div>
+        <div class="crow tot"><span class="cl" style="font-weight:700;font-size:12px">NOTE FINALE</span><span class="cf">${r.a1} + ${r.c2v} + ${r.c3v}</span><span class="cv">${r.total.toFixed(2)} <small>/20</small></span></div>
+      </div>
+      <div class="codeb">AFL1 = ${r.a1} pts<br>AFL2_conv = (${r.a2}/4) × ${r.c2} = <strong>${r.c2v} pts</strong><br>AFL3_conv = (${r.a3}/4) × ${r.c3} = <strong>${r.c3v} pts</strong><br><strong>Total = ${r.a1} + ${r.c2v} + ${r.c3v} = ${r.total.toFixed(2)} / 20</strong></div>`;}
+  } else {
+    const r=calcPro(s);
+    if(!r){body=`<p style="text-align:center;color:var(--text-muted);padding:24px 0">Notes incomplètes — renseignez les 4 AFLP.</p>`;}
+    else{body=`<div class="chip pro">✦ Choix ${r.ch} — ${esc(S.labels.afla)}:/${r.cca} · ${esc(S.labels.aflb)}:/${r.ccb}</div>
+      <div class="ctbl">
+        <div class="crow"><span class="cl">${L('aflp1')}</span><span class="cf">note brute</span><span class="cv">${r.p1} <small style="font-weight:400;color:var(--text-light)">/7</small></span></div>
+        <div class="crow"><span class="cl">${L('aflp2')}</span><span class="cf">note brute</span><span class="cv">${r.p2} <small style="font-weight:400;color:var(--text-light)">/5</small></span></div>
+        <div class="crow"><span class="cl">${L('afla')} converti</span><span class="cf">(${r.ca}/4) × ${r.cca}</span><span class="cv">${r.cav} <small style="font-weight:400;color:var(--text-light)">/${r.cca}</small></span></div>
+        <div class="crow"><span class="cl">${L('aflb')} converti</span><span class="cf">(${r.cb}/4) × ${r.ccb}</span><span class="cv">${r.cbv} <small style="font-weight:400;color:var(--text-light)">/${r.ccb}</small></span></div>
+        <div class="crow totp"><span class="cl" style="font-weight:700;font-size:12px">NOTE FINALE</span><span class="cf">${r.p1} + ${r.p2} + ${r.cav} + ${r.cbv}</span><span class="cv">${r.total.toFixed(2)} <small>/20</small></span></div>
+      </div>
+      <div class="codeb">${esc(S.labels.aflp1)} = ${r.p1} pts<br>${esc(S.labels.aflp2)} = ${r.p2} pts<br>${esc(S.labels.afla)}_conv = (${r.ca}/4) × ${r.cca} = <strong>${r.cav} pts</strong><br>${esc(S.labels.aflb)}_conv = (${r.cb}/4) × ${r.ccb} = <strong>${r.cbv} pts</strong><br><strong>Total = ${r.p1} + ${r.p2} + ${r.cav} + ${r.cbv} = ${r.total.toFixed(2)} / 20</strong></div>`;}
+  }
+  el.innerHTML=`<div class="mhdr"><div><div class="mtitle">${esc(s.nom)} ${esc(s.prenom)}</div>
+    <div class="msub">Détail · ${S.voie==='generale'?'Voie Générale':'Voie Professionnelle'}${s.classe?` · ${esc(s.classe)}`:''}</div></div>
+    <button class="btnx" onclick="closeModal()">×</button></div>
+    <div class="mbody">${body}</div>
+    <div class="mftr"><button class="btn btn-o" onclick="closeModal()">Fermer</button></div>`;
+}
+
+function showDetail(id){const s=findStu(id);if(s)openModal('detail',s);}
+function closeModal(){gid('bk').classList.remove('on');activeModal=null;}
+function bgClose(e){if(e.target===gid('bk'))closeModal();}
+
+function doNewClass(){
+  const n=gid('nc_n').value.trim();if(!n){toast('Nom requis','err');return;}
+  const cls={id:'c'+(S.uid++),name:n,students:[]};
+  S.classes.push(cls);S.activeId=cls.id;
+  closeModal();render();toast(`"${n}" créée`,'ok');
+}
+function doAddStu(){
+  const nom=gid('as_n').value.trim().toUpperCase();
+  const prenom=gid('as_p').value.trim();
+  const classe=gid('as_c').value.trim();
+  const choix=gid('as_ch').value;
+  if(!nom||!prenom){toast('Nom et prénom requis','err');return;}
+  const cls=getActive();if(!cls){toast('Sélectionnez une classe','err');return;}
+  const s=mkStu(nom,prenom,classe);s.choix=choix;
+  cls.students.push(s);closeModal();render();toast(`${nom} ${prenom} ajouté(e)`,'ok');
+}
+function saveLabels(){
+  S.labels.aflp1=gid('lb_aflp1').value.trim()||'AFLP1';
+  S.labels.aflp2=gid('lb_aflp2').value.trim()||'AFLP2';
+  S.labels.afla=gid('lb_afla').value.trim()||'AFL Comp. A';
+  S.labels.aflb=gid('lb_aflb').value.trim()||'AFL Comp. B';
+  closeModal();render();toast('Colonnes renommées ✓','ok');
+}
+
+/* ── EXPORT EXCEL ── */
+function doExportExcel(){
+  const cls=getActive();if(!cls||!cls.students.length){toast('Aucune donnée','err');return;}
+  const wb=XLSX.utils.book_new();
+  const rows=[];
+  if(S.voie==='generale'){
+    rows.push(['NOM','PRÉNOM','CLASSE','AFL1 (/12)','AFL2 (/4)','AFL3 (/4)','CHOIX','AFL2 Conv.','AFL3 Conv.','NOTE /20']);
+    cls.students.forEach(s=>{const r=calcGen(s);rows.push([s.nom,s.prenom,s.classe,s.afl1!==''?+s.afl1:'',s.afl2!==''?+s.afl2:'',s.afl3!==''?+s.afl3:'',s.choix||'B',r?r.c2v:'',r?r.c3v:'',r?r.total:'']);});
+  } else {
+    rows.push(['NOM','PRÉNOM','CLASSE',S.labels.aflp1+' (/7)',S.labels.aflp2+' (/5)',S.labels.afla+' (/4)',S.labels.aflb+' (/4)','CHOIX','Conv. A','Conv. B','NOTE /20']);
+    cls.students.forEach(s=>{const r=calcPro(s);rows.push([s.nom,s.prenom,s.classe,s.aflp1!==''?+s.aflp1:'',s.aflp2!==''?+s.aflp2:'',s.afla!==''?+s.afla:'',s.aflb!==''?+s.aflb:'',s.choix||'B',r?r.cav:'',r?r.cbv:'',r?r.total:'']);});
+  }
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:22},{wch:18},{wch:12},...Array(8).fill({wch:12})];
+  XLSX.utils.book_append_sheet(wb,ws,cls.name.substring(0,31));
+  XLSX.writeFile(wb,`EPS_Cyclades_${cls.name.replace(/\s/g,'_')}_${S.voie}.xlsx`);
+  toast('Export Excel réussi ✓','ok');
+}
+
+/* ── EXPORT PDF — fenêtre d'impression native (aucune dépendance externe) ── */
+function doExportPDF(){
+  const cls=getActive();if(!cls||!cls.students.length){toast('Aucune donnée à exporter','err');return;}
+  const now=new Date().toLocaleDateString('fr-FR');
+  const voieLabel=S.voie==='generale'?'Voie Générale':'Voie Professionnelle';
+
+  /* ── Build table rows ── */
+  let thCells='', rows='';
+  if(S.voie==='generale'){
+    thCells=`<th class="left">Nom</th><th class="left">Prénom</th><th>Classe</th>
+      <th>AFL1<br><small>/12</small></th><th>AFL2<br><small>/4</small></th><th>AFL3<br><small>/4</small></th>
+      <th>Choix</th><th>AFL2<br>Conv.</th><th>AFL3<br>Conv.</th><th class="note-col">Note<br>/20</th>`;
+    rows=cls.students.map((s,i)=>{
+      const r=calcGen(s);
+      const note=r?r.total.toFixed(2):'—';
+      const nc=r?nCls(r.total):'';
+      return `<tr class="${i%2===1?'alt':''}">
+        <td class="left bold">${esc(s.nom)}</td>
+        <td class="left">${esc(s.prenom)}</td>
+        <td class="center muted">${esc(s.classe||'')}</td>
+        <td class="mono">${s.afl1!==''?s.afl1:'—'}</td>
+        <td class="mono">${s.afl2!==''?s.afl2:'—'}</td>
+        <td class="mono">${s.afl3!==''?s.afl3:'—'}</td>
+        <td class="center">${s.choix||'B'}</td>
+        <td class="mono">${r?r.c2v:'—'}</td>
+        <td class="mono">${r?r.c3v:'—'}</td>
+        <td class="mono note-col ${nc}">${note}</td>
+      </tr>`;
+    }).join('');
+  } else {
+    const l1=esc(S.labels.aflp1),l2=esc(S.labels.aflp2),la=esc(S.labels.afla),lb=esc(S.labels.aflb);
+    thCells=`<th class="left">Nom</th><th class="left">Prénom</th><th>Classe</th>
+      <th>${l1}<br><small>/7</small></th><th>${l2}<br><small>/5</small></th>
+      <th>${la}<br><small>/4</small></th><th>${lb}<br><small>/4</small></th>
+      <th>Choix</th><th>Conv.<br>A</th><th>Conv.<br>B</th><th class="note-col">Note<br>/20</th>`;
+    rows=cls.students.map((s,i)=>{
+      const r=calcPro(s);
+      const note=r?r.total.toFixed(2):'—';
+      const nc=r?nCls(r.total):'';
+      return `<tr class="${i%2===1?'alt':''}">
+        <td class="left bold">${esc(s.nom)}</td>
+        <td class="left">${esc(s.prenom)}</td>
+        <td class="center muted">${esc(s.classe||'')}</td>
+        <td class="mono">${s.aflp1!==''?s.aflp1:'—'}</td>
+        <td class="mono">${s.aflp2!==''?s.aflp2:'—'}</td>
+        <td class="mono">${s.afla!==''?s.afla:'—'}</td>
+        <td class="mono">${s.aflb!==''?s.aflb:'—'}</td>
+        <td class="center">${s.choix||'B'}</td>
+        <td class="mono">${r?r.cav:'—'}</td>
+        <td class="mono">${r?r.cbv:'—'}</td>
+        <td class="mono note-col ${nc}">${note}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  /* ── Stats footer ── */
+  const notes=cls.students.map(s=>S.voie==='generale'?calcGen(s):calcPro(s)).filter(Boolean).map(r=>r.total);
+  let statsHtml='';
+  if(notes.length){
+    const avg=(notes.reduce((a,b)=>a+b,0)/notes.length).toFixed(2);
+    const mn=Math.min(...notes).toFixed(2), mx=Math.max(...notes).toFixed(2);
+    const pass=notes.filter(n=>n>=10).length;
+    statsHtml=`<div class="stats">
+      Moyenne : <strong>${avg}/20</strong> &nbsp;|&nbsp;
+      Min. : <strong>${mn}</strong> &nbsp;|&nbsp;
+      Max. : <strong>${mx}</strong> &nbsp;|&nbsp;
+      ≥ 10/20 : <strong>${pass}/${notes.length} élève${pass>1?'s':''}</strong>
+    </div>`;
+  }
+
+  /* ── Choix répartition ── */
+  const cA=cls.students.filter(s=>s.choix==='A').length;
+  const cB=cls.students.filter(s=>!s.choix||s.choix==='B').length;
+  const cC=cls.students.filter(s=>s.choix==='C').length;
+
+  /* ── Full HTML print page ── */
+  const html=`<!DOCTYPE html>
+<html lang="fr"><head>
+<meta charset="UTF-8">
+<title>EPS Cyclades — ${esc(cls.name)}</title>
+<style>
+  @page { size: A4 landscape; margin: 14mm 12mm 14mm 12mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #0f172a; }
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid #1d4ed8; }
+  .ph-left h1 { font-size: 14pt; font-weight: 800; color: #1d4ed8; letter-spacing: -0.3px; }
+  .ph-left .sub { font-size: 8.5pt; color: #64748b; margin-top: 2px; }
+  .ph-right { text-align: right; font-size: 8pt; color: #64748b; line-height: 1.6; }
+  .voie-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 8pt; font-weight: 700; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .voie-badge.pro { background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe; }
+  table { width: 100%; border-collapse: collapse; margin-top: 0; }
+  thead tr { background: #f1f5f9; }
+  th { padding: 5px 6px; text-align: center; font-size: 7.5pt; font-weight: 700; color: #475569; border: 1px solid #e2e8f0; line-height: 1.3; white-space: nowrap; }
+  th.left { text-align: left; }
+  td { padding: 4.5px 6px; border: 1px solid #e2e8f0; font-size: 8.5pt; vertical-align: middle; }
+  tr.alt td { background: #f8fafc; }
+  .left { text-align: left; }
+  .center { text-align: center; }
+  .mono { text-align: center; font-family: 'Courier New', monospace; font-weight: 600; }
+  .bold { font-weight: 700; }
+  .muted { color: #94a3b8; font-size: 8pt; }
+  .note-col { font-size: 10pt; font-weight: 800; }
+  .ex { color: #059669; } .ok { color: #16a34a; } .mo { color: #d97706; } .lo { color: #dc2626; }
+  .stats { margin-top: 8px; font-size: 8pt; color: #64748b; padding: 5px 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; }
+  .stats strong { color: #0f172a; }
+  .choix-row { margin-top: 5px; font-size: 7.5pt; color: #94a3b8; }
+  .footer { margin-top: 10px; display: flex; justify-content: space-between; font-size: 7.5pt; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 5px; }
+  .formula-box { margin-top: 6px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 5px 10px; font-size: 7.5pt; color: #64748b; line-height: 1.7; }
+  .formula-box strong { color: #1d4ed8; }
+  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+</style>
+</head><body>
+<div class="page-header">
+  <div class="ph-left">
+    <h1>🏃 EPS Cyclades — Notes Terminale</h1>
+    <div class="sub">
+      Classe : <strong>${esc(cls.name)}</strong> &nbsp;·&nbsp;
+      ${cls.students.length} élève${cls.students.length>1?'s':''} &nbsp;·&nbsp;
+      <span class="voie-badge${S.voie==='professionnelle'?' pro':''}">${voieLabel}</span>
+    </div>
+  </div>
+  <div class="ph-right">
+    Date : ${now}<br>
+    Imprimé via EPS Cyclades
+  </div>
+</div>
+<table>
+  <thead><tr>${thCells}</tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+${statsHtml}
+<div class="choix-row">Répartition des choix — Option A (2/6) : ${cA} &nbsp;|&nbsp; Option B (4/4) : ${cB} &nbsp;|&nbsp; Option C (6/2) : ${cC}</div>
+<div class="formula-box">
+  <strong>Formule :</strong>
+  ${S.voie==='generale'
+    ?'Note /20 = AFL1 + (AFL2/4 × coeff) + (AFL3/4 × coeff) &nbsp;—&nbsp; Option A : coeff 2/6 &nbsp;|&nbsp; Option B : coeff 4/4 &nbsp;|&nbsp; Option C : coeff 6/2'
+    :`Note /20 = ${esc(S.labels.aflp1)} + ${esc(S.labels.aflp2)} + (CompA/4 × coeff) + (CompB/4 × coeff) &nbsp;—&nbsp; Option A : coeff 2/6 &nbsp;|&nbsp; Option B : coeff 4/4 &nbsp;|&nbsp; Option C : coeff 6/2`
+  }
+</div>
+<div class="footer">
+  <span>EPS Cyclades — Calculateur de notes Terminale</span>
+  <span>${esc(cls.name)} · ${voieLabel} · ${now}</span>
+</div>
+<script>window.onload=()=>{window.print();}<\/script>
+</body></html>`;
+
+  const win=window.open('','_blank','width=1100,height=750');
+  if(!win){
+    toast('Fenêtre bloquée — autorisez les pop-ups pour ce fichier','warn');
+    return;
+  }
+  win.document.write(html);
+  win.document.close();
+  toast('Fenêtre d\'impression ouverte ✓','ok');
+}
+
+/* ── TEMPLATE ── */
+function dlTemplate(){
+  const wb=XLSX.utils.book_new();
+  const ws1=XLSX.utils.aoa_to_sheet([
+    ['NOM','PRENOM','CLASSE','AFL1','AFL2','AFL3','CHOIX'],
+    ['MARTIN','Julie','TLE A',11,3,3.5,'A'],['DUPONT','Thomas','TLE A',9,2,3,'B'],['BERNARD','Emma','TLE B',10.5,3.5,3,'C'],
+  ]);
+  ws1['!cols']=[{wch:20},{wch:18},{wch:12},{wch:7},{wch:7},{wch:7},{wch:7}];
+  XLSX.utils.book_append_sheet(wb,ws1,'Modèle Générale');
+
+  const ws2=XLSX.utils.aoa_to_sheet([
+    ['NOM','PRENOM','CLASSE','AFLP1','AFLP2','AFLA','AFLB','CHOIX'],
+    ['MARTIN','Julie','TLE PRO',6,4,3.5,3,'A'],['DUPONT','Thomas','TLE PRO',5,3.5,2,3,'B'],
+  ]);
+  ws2['!cols']=[{wch:20},{wch:18},{wch:12},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7}];
+  XLSX.utils.book_append_sheet(wb,ws2,'Modèle Pro');
+
+  const ws3=XLSX.utils.aoa_to_sheet([
+    ['NOM PRENOM','CLASSE','AFL1','AFL2','AFL3','CHOIX'],
+    ['MARTIN Julie','TLE A',11,3,3.5,'A'],['DUPONT Thomas','TLE A',9,2,3,'B'],
+  ]);
+  ws3['!cols']=[{wch:24},{wch:12},{wch:7},{wch:7},{wch:7},{wch:7}];
+  XLSX.utils.book_append_sheet(wb,ws3,'Nom+Prénom fusionnés');
+
+  XLSX.writeFile(wb,'EPS_Cyclades_Modele.xlsx');
+  toast('Modèle téléchargé','ok');
+}
+
+/* ── TOAST ── */
+function toast(msg,type=''){
+  const c=gid('toasts'),t=document.createElement('div');
+  t.className=`toast ${type}`;
+  const ico={ok:'✓',err:'✕',warn:'⚠'}[type]||'ℹ';
+  t.innerHTML=`<span>${ico}</span><span>${esc(msg)}</span>`;
+  c.appendChild(t);
+  setTimeout(()=>{t.style.cssText+='opacity:0;transform:translateY(5px);transition:all .2s';setTimeout(()=>t.remove(),220);},3500);
+}
+
+/* ── SAVE / LOAD ── */
+let saveT;
+function dSave(){clearTimeout(saveT);saveT=setTimeout(save,400);}
+function save(){
+  try{localStorage.setItem('eps_v3',JSON.stringify(S));const b=gid('saveDot');b.classList.add('on');setTimeout(()=>b.classList.remove('on'),2200);}catch(e){}
+}
+function load(){
+  try{const d=localStorage.getItem('eps_v3');if(d){const p=JSON.parse(d);S={...S,...p,labels:{...S.labels,...(p.labels||{})}}; }}catch(e){}
+}
+
+/* ── KEYBOARD ── */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeModal();
+  if(e.key==='Enter'){
+    if(activeModal==='addStudent')doAddStu();
+    if(activeModal==='newClass')doNewClass();
+    if(activeModal==='labels')saveLabels();
+  }
+  if(e.ctrlKey&&e.key==='g'){e.preventDefault();setVoie('generale');}
+  if(e.ctrlKey&&e.key==='p'){e.preventDefault();setVoie('professionnelle');}
+});
+
+/* ── INIT ── */
+load();
+S.uid=Math.max(S.uid,...S.classes.flatMap(c=>c.students.map(s=>parseInt(s.id.slice(1))||0)),...S.classes.map(c=>parseInt(c.id.slice(1))||0),1)+1;
+if(!S.classes.length){S.classes.push({id:'c'+(S.uid++),name:'Terminale A',students:[]});S.activeId=S.classes[0].id;}
+if(!S.activeId)S.activeId=S.classes[0]?.id||null;
+gid('btnLabels').style.display=S.voie==='professionnelle'?'':'none';
+render();
+</script>
+</body>
+</html>
